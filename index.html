@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordem de Serviço — Gestão de Oficina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand-row">
+    <div>
+      <div class="brand">Ordem de <span>Serviço</span></div>
+      <div class="brand-sub">Gestão de manutenções da oficina</div>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="nova">Nova ordem</button>
+    <button class="tab-btn" data-view="historico">Histórico de atendimentos</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===================== VIEW: NOVA ORDEM ===================== -->
+  <section id="view-nova" class="view active">
+
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Dados da oficina</h2>
+        <button type="button" class="settings-toggle" id="btn-toggle-config">editar dados impressos no resumo</button>
+      </div>
+      <div class="sheet-body" id="painel-config">
+        <div class="field-grid">
+          <div class="field">
+            <label for="cfg-nome">Nome da oficina</label>
+            <input type="text" id="cfg-nome" placeholder="Ex: Oficina do Marcão">
+          </div>
+          <div class="field">
+            <label for="cfg-tel">Telefone / contato</label>
+            <input type="text" id="cfg-tel" placeholder="Ex: (11) 99999-0000">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Cadastro do veículo e proprietário</h2>
+      </div>
+      <div class="sheet-body">
+        <div class="field-grid">
+          <div class="field">
+            <label for="f-proprietario">Nome do proprietário</label>
+            <input type="text" id="f-proprietario" placeholder="Nome completo">
+          </div>
+          <div class="field">
+            <label for="f-modelo">Modelo</label>
+            <input type="text" id="f-modelo" placeholder="Ex: Onix, Corolla, HB20">
+          </div>
+          <div class="field">
+            <label for="f-placa">Placa</label>
+            <input type="text" id="f-placa" placeholder="ABC1D23" maxlength="8" style="text-transform:uppercase">
+          </div>
+          <div class="field">
+            <label for="f-cor">Cor</label>
+            <input type="text" id="f-cor" placeholder="Ex: Prata">
+          </div>
+          <div class="field">
+            <label for="f-ano">Ano</label>
+            <input type="text" id="f-ano" placeholder="Ex: 2019" maxlength="9">
+          </div>
+          <div class="field">
+            <label for="f-versao">Versão</label>
+            <input type="text" id="f-versao" placeholder="Ex: LT 1.0 Turbo">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Peças e serviços realizados</h2>
+        <span class="hint">adicione cada item com o valor cobrado</span>
+      </div>
+      <div class="sheet-body">
+        <table class="itens">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th class="col-tipo">Tipo</th>
+              <th class="col-valor">Valor (R$)</th>
+              <th class="col-acao"></th>
+            </tr>
+          </thead>
+          <tbody id="itens-body">
+            <!-- linhas dinâmicas -->
+          </tbody>
+        </table>
+
+        <div class="add-item-row">
+          <button type="button" class="btn btn-ghost" id="btn-add-item">+ Adicionar item</button>
+        </div>
+
+        <div class="total-row">
+          <span class="label">Total do atendimento</span>
+          <span class="valor"><span id="total-valor">R$ 0,00</span></span>
+        </div>
+
+        <div class="field" style="margin-top:20px;">
+          <label for="f-obs">Observações (opcional)</label>
+          <textarea id="f-obs" placeholder="Ex: recomendações para a próxima revisão, garantia de peças, etc."></textarea>
+        </div>
+
+        <div id="form-msg"></div>
+
+        <div class="actions-row">
+          <button type="button" class="btn btn-ghost" id="btn-limpar">Limpar formulário</button>
+          <button type="button" class="btn btn-primary" id="btn-salvar">Salvar atendimento</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== VIEW: HISTÓRICO ===================== -->
+  <section id="view-historico" class="view">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Histórico de serviços realizados</h2>
+      </div>
+      <div class="sheet-body">
+        <div class="busca-row">
+          <div class="field">
+            <label for="busca-input">Buscar por proprietário ou placa</label>
+            <input type="text" id="busca-input" placeholder="Digite o nome ou a placa...">
+          </div>
+          <button type="button" class="btn btn-ghost" id="btn-limpar-busca">Limpar busca</button>
+        </div>
+
+        <table class="historico">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Proprietário</th>
+              <th>Veículo</th>
+              <th>Placa</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="historico-body"></tbody>
+        </table>
+        <div id="historico-vazio" class="empty-state" style="display:none;">Nenhum atendimento encontrado.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== MODAL: RESUMO / IMPRESSÃO ===================== -->
+<div class="modal-backdrop" id="modal-resumo">
+  <div style="width:100%;">
+    <div class="resumo-print" id="resumo-conteudo">
+      <!-- preenchido via JS -->
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="btn-fechar-modal">Fechar</button>
+      <button type="button" class="btn btn-primary" id="btn-imprimir">Imprimir resumo</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
