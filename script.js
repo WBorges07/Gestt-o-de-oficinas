@@ -24,6 +24,48 @@
     localStorage.setItem(LS_CONFIG, JSON.stringify(cfg));
   }
 
+  // ---------- Banco de dados na nuvem (Firebase Firestore) ----------
+  // Cole aqui as credenciais do seu projeto Firebase (passo a passo na resposta).
+  // Enquanto estiver vazio, o sistema continua funcionando só com o localStorage.
+  var FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCuSDehXW5a_iO2y1G43WimPg1w9Z5pCQY",
+    authDomain: "oficina-os-56aee.firebaseapp.com",
+    projectId: "oficina-os-56aee",
+    storageBucket: "oficina-os-56aee.firebasestorage.app",
+    messagingSenderId: "680979293980",
+    appId: "1:680979293980:web:63d27914fa51ffe3be7cd9"
+  };
+  var db = null;
+  try{
+    if(window.firebase && FIREBASE_CONFIG.apiKey){
+      firebase.initializeApp(FIREBASE_CONFIG);
+      db = firebase.firestore();
+    }
+  }catch(e){ console.error(e); db = null; }
+
+  function nuvemSalvar(ordem){
+    if(!db) return Promise.resolve();
+    return db.collection("ordens").doc(ordem.id).set(ordem).catch(function(e){ console.error(e); });
+  }
+  function nuvemExcluir(id){
+    if(!db) return Promise.resolve();
+    return db.collection("ordens").doc(id).delete().catch(function(e){ console.error(e); });
+  }
+  function nuvemCarregar(callback){
+    if(!db) return;
+    db.collection("ordens").get().then(function(snap){
+      var nuvem = [], ids = {};
+      snap.forEach(function(d){ var o = d.data(); nuvem.push(o); ids[o.id] = true; });
+      // envia para a nuvem o que só existe neste navegador
+      carregarOrdens().forEach(function(o){
+        if(!ids[o.id]){ nuvem.push(o); nuvemSalvar(o); }
+      });
+      nuvem.sort(function(a,b){ return a.dataISO < b.dataISO ? 1 : -1; });
+      salvarOrdens(nuvem);
+      if(callback) callback();
+    }).catch(function(e){ console.error(e); });
+  }
+
   // ---------- Utilidades ----------
   function formatarMoeda(valor){
     return valor.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
@@ -150,6 +192,7 @@
     document.getElementById('f-ano').value = '';
     document.getElementById('f-versao').value = '';
     document.getElementById('f-obs').value = '';
+    document.getElementById('f-whatsapp').value = '';
     itensBody.innerHTML = '';
     adicionarItemVazio();
     atualizarTotal();
@@ -166,6 +209,7 @@
     var ano = document.getElementById('f-ano').value.trim();
     var versao = document.getElementById('f-versao').value.trim();
     var obs = document.getElementById('f-obs').value.trim();
+    var whatsapp = document.getElementById('f-whatsapp').value.trim();
     var itens = coletarItens();
     var total = atualizarTotal();
 
@@ -191,12 +235,14 @@
       versao: versao,
       itens: itens,
       total: total,
-      observacoes: obs
+      observacoes: obs,
+      whatsapp: whatsapp
     };
 
     var lista = carregarOrdens();
     lista.unshift(ordem);
     salvarOrdens(lista);
+    nuvemSalvar(ordem);
 
     formMsg.innerHTML = '<div class="msg-ok">Atendimento salvo com sucesso.</div>';
     abrirResumo(ordem);
@@ -206,6 +252,7 @@
   // ---------- Resumo / impressão ----------
   var modalResumo = document.getElementById('modal-resumo');
   var resumoConteudo = document.getElementById('resumo-conteudo');
+  var ordemAtual = null;
 
   function abrirResumo(ordem){
     var cfg = carregarConfig();
@@ -241,11 +288,37 @@
         '<div>Assinatura do cliente</div>' +
       '</div>';
 
+    ordemAtual = ordem;
     modalResumo.classList.add('open');
   }
 
   document.getElementById('btn-fechar-modal').addEventListener('click', function(){
     modalResumo.classList.remove('open');
+  });
+  function textoWhatsApp(o){
+    var cfg = carregarConfig();
+    var t = '*' + (cfg.nome ? cfg.nome : 'Oficina Mecânica') + '*\n';
+    if(cfg.telefone) t += cfg.telefone + '\n';
+    t += '\n*Resumo do atendimento* - ' + o.dataFormatada + '\n\n';
+    t += 'Proprietário: ' + o.proprietario + '\n';
+    t += 'Veículo: ' + [o.modelo, o.versao].filter(Boolean).join(' ') + '\n';
+    t += 'Placa: ' + o.placa + '\n';
+    if(o.cor) t += 'Cor: ' + o.cor + '\n';
+    if(o.ano) t += 'Ano: ' + o.ano + '\n';
+    t += '\n*Peças e serviços:*\n';
+    o.itens.forEach(function(it){
+      t += '- ' + it.descricao + ' (' + it.tipo + '): ' + formatarMoeda(it.valor) + '\n';
+    });
+    t += '\n*Total: ' + formatarMoeda(o.total) + '*\n';
+    if(o.observacoes) t += '\nObservações: ' + o.observacoes + '\n';
+    return t;
+  }
+  document.getElementById('btn-whatsapp').addEventListener('click', function(){
+    if(!ordemAtual) return;
+    var tel = (ordemAtual.whatsapp || '').replace(/\D/g, '');
+    if(tel && tel.length <= 11){ tel = '55' + tel; }
+    var url = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(textoWhatsApp(ordemAtual));
+    window.open(url, '_blank');
   });
   document.getElementById('btn-imprimir').addEventListener('click', function(){
     window.print();
@@ -314,10 +387,12 @@
       if(confirm('Excluir este atendimento do histórico? Esta ação não pode ser desfeita.')){
         var lista2 = carregarOrdens().filter(function(o){ return o.id !== id; });
         salvarOrdens(lista2);
+        nuvemExcluir(id);
         renderHistorico();
       }
     }
   });
 
   atualizarTotal();
+  nuvemCarregar(renderHistorico);
 })();

@@ -78,6 +78,10 @@
             <label for="f-versao">Versão</label>
             <input type="text" id="f-versao" placeholder="Ex: LT 1.0 Turbo">
           </div>
+          <div class="field">
+            <label for="f-whatsapp">WhatsApp do cliente (opcional)</label>
+            <input type="text" id="f-whatsapp" placeholder="Ex: (11) 99999-0000" maxlength="20">
+          </div>
         </div>
       </div>
     </div>
@@ -170,11 +174,14 @@
     </div>
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="btn-fechar-modal">Fechar</button>
+      <button type="button" class="btn btn-whatsapp" id="btn-whatsapp">Compartilhar no WhatsApp</button>
       <button type="button" class="btn btn-primary" id="btn-imprimir">Imprimir resumo</button>
     </div>
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

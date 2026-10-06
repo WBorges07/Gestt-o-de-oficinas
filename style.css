@@ -468,3 +468,11 @@ table.historico tbody tr:hover{ background: #FAF8F3; }
   .modal-backdrop{ position:absolute; background:none; padding:0; }
   .modal-actions{ display:none; }
 }
+
+/* ---------- Botão WhatsApp ---------- */
+.btn-whatsapp{
+  border-color: #1DA851;
+  background: #25D366;
+  color: #08310F;
+}
+.btn-whatsapp:hover{ background: #1DA851; color:#fff; }
